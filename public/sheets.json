@@ -1,0 +1,134 @@
+{
+    "pinnedSheets": ["1"],
+    "dockSheets": ["2", "3", "4"],
+    "sections": [
+      {
+        "id": "1",
+        "title": "Info",
+        "sheets": ["1", "2"]
+      },
+      {
+        "id": "2",
+        "title": "Creature Data",
+        "sheets": ["3"]
+      }
+    ],
+    "sheets": [
+      {
+        "id": "1",
+        "title": "Creature Lookup Book",
+        "type": "Info",
+        "icon": "icon.png",
+        "sqlQuery": "SELECT * FROM creatures",
+        "metadata": {
+          "columns": [
+            {
+              "name": "creature_name",
+              "displayName": "Creature Name",
+              "type": "name",
+              "scale": "categorical"
+            },
+            {
+              "name": "creature_faction",
+              "displayName": "Creature Faction",
+              "type": "name",
+              "scale": "categorical"
+            },
+            {
+              "name": "creature_color",
+              "displayName": "Creature Color",
+              "type": "name",
+              "scale": "categorical"
+            }
+          ],
+          "defaultView": "table",
+          "default_column_x": "creature_name",
+          "default_column_y": "creature_faction"
+        }
+      },
+      {
+        "id": "2",
+        "title": "Potions Cook Book",
+        "type": "Info",
+        "icon": "icon.png",
+        "sqlQuery": "SELECT * FROM recipes",
+        "metadata": {
+          "columns": [
+            {
+              "name": "recipe_name",
+              "displayName": "Recipe",
+              "type": "name",
+              "scale": "categorical"
+            },
+            {
+              "name": "recipe_ingredient_resource_type",
+              "displayName": "Ingredient",
+              "type": "name",
+              "scale": "categorical"
+            }
+          ],
+          "defaultView": "table",
+          "default_column_x": "recipe_name",
+          "default_column_y": "recipe_ingredient_resource_type"
+        }
+      },
+      {
+        "id": "3",
+        "title": "Visitor Log",
+        "type": "World Data",
+        "icon": "icon.png",
+        "sqlQuery": "SELECT * FROM creatures",
+        "metadata": {
+          "columns": [
+            {
+              "name": "creature_name",
+              "displayName": "Creature Name",
+              "type": "name",
+              "scale": "categorical"
+            },
+            {
+              "name": "visit_arrival_time",
+              "displayName": "Arrival Time",
+              "type": "time",
+              "scale": "ordinal"
+            }
+        ],
+          "defaultView": "table",
+          "default_column_x": "visit_arrival_time",
+          "default_column_y": "creature_name"
+        }
+      },
+      {
+        "id": "4",
+        "title": "Luminara's Interaction Memories",
+        "type": "Creature Data",
+        "icon": "icon.png",
+        "sqlQuery": "SELECT * FROM creatures",
+        "metadata": {
+          "columns": [
+            {
+              "name": "player_name",
+              "displayName": "Player",
+              "type": "name",
+              "scale": "categorical"
+            },
+            {
+              "name": "interaction_location_x",
+              "displayName": "X Location",
+              "type": "location",
+              "scale": "numeric"
+            },
+            {
+                "name": "interaction_location_y",
+                "displayName": "Y Location",
+                "type": "location",
+                "scale": "numeric"
+            }
+          ],
+          "defaultView": "map",
+          "default_column_x": "interaction_location_x",
+          "default_column_y": "interaction_location_y"
+        }
+      }
+    ]
+}
