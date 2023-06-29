@@ -1,8 +1,9 @@
 <template>
-  <div class="data-sheet" @click="selectSheet">
+  <div class="data-sheet" @click="selectSheet" @mouseover="mouseOver" @mouseleave="mouseLeave">
     <!-- Icon based on the default representation of the dataset -->
-    <div class="icon-wrapper">
-      <img :src="sheet.icon" alt="Data icon" />
+    <div class="icon-wrapper"
+        :style="`box-shadow: 0 0 0 3px ${outerColor}`">
+        <img :src="sheet.icon" alt="icon" />
     </div>
     <!-- Title of the dataset -->
     <h4 class="title" :title="sheet.title">{{ sheet.title }}</h4>
@@ -17,22 +18,45 @@ export default {
   props: {
     sheet: {
       type: Object,
-      required: true,
+      required: true
     },
   },
+  emits: ['select', 'mouseover', 'mouseleave'],  // Define the custom events here
   data() {
     return {
-      showTooltip: false,
+      showTooltip: false
     };
   },
   methods: {
     selectSheet() {
       this.$emit('select', this.sheet);
     },
+    mouseOver() {
+      this.$emit('mouseover');
+    },
+    mouseLeave() {
+      this.$emit('mouseleave');
+    },
     toggleTooltip(show) {
       this.showTooltip = show;
     },
   },
+  computed: {
+    outerColor() {
+      switch(this.sheet.metadata.defaultView) {
+        case 'table':
+          return("black")
+        case 'bar':
+          return("red")
+        case 'plot':
+          return("green")
+        case 'map':
+          return("blue")
+        default:
+          return("black")
+      }
+    }
+  }
 };
 </script>
 
@@ -52,10 +76,10 @@ export default {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: #666;
   display: flex;
   justify-content: center;
   align-items: center;
+  background-color: #eee;
 }
 
 .icon-wrapper img {

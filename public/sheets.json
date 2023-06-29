@@ -1,6 +1,7 @@
 {
     "pinnedSheets": ["1"],
-    "dockSheets": ["2", "3", "4"],
+    "dockSheets": ["2", "3"],
+    "inventorySheets": ["1", "2", "3"],
     "sections": [
       {
         "id": "1",
@@ -24,19 +25,19 @@
           "columns": [
             {
               "name": "creature_name",
-              "displayName": "Creature Name",
+              "displayName": "Creature",
               "type": "name",
               "scale": "categorical"
             },
             {
               "name": "creature_faction",
-              "displayName": "Creature Faction",
+              "displayName": "Faction",
               "type": "name",
               "scale": "categorical"
             },
             {
               "name": "creature_color",
-              "displayName": "Creature Color",
+              "displayName": "Color",
               "type": "name",
               "scale": "categorical"
             }
@@ -82,13 +83,13 @@
           "columns": [
             {
               "name": "creature_name",
-              "displayName": "Creature Name",
+              "displayName": "Creature",
               "type": "name",
               "scale": "categorical"
             },
             {
               "name": "visit_arrival_time",
-              "displayName": "Arrival Time",
+              "displayName": "Time",
               "type": "time",
               "scale": "ordinal"
             }
@@ -114,13 +115,13 @@
             },
             {
               "name": "interaction_location_x",
-              "displayName": "X Location",
+              "displayName": "X",
               "type": "location",
               "scale": "numeric"
             },
             {
                 "name": "interaction_location_y",
-                "displayName": "Y Location",
+                "displayName": "Y",
                 "type": "location",
                 "scale": "numeric"
             }

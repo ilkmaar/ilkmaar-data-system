@@ -1,13 +1,13 @@
 <template>
     <div class="data-dock">
-      <DataSheet 
+      <DataSheet
         v-for="sheet in sheets" 
         :key="sheet.id" 
         :sheet="sheet"
         @select="selectSheet"
       />
     </div>
-  </template>
+</template>
   
   <script>
   import DataSheet from './DataSheet.vue';
@@ -30,7 +30,7 @@
     },
   };
   </script>
-  
+
 <style scoped>
 
 .data-dock {

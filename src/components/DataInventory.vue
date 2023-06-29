@@ -1,6 +1,7 @@
 <template>
-  <div class="data-inventory">
-    <div class="inventory-tabs">
+  <div class="data-inventory" :style="inventoryStyle">
+    <button class="close-button" @click="toggleInventory">Open/Close Data Inventory</button>
+    <div class="inventory-tabs"  v-show="inventoryOpen">
       <h3 
         v-for="(sectionSheets, section) in sections" 
         :key="section" 
@@ -10,7 +11,7 @@
         {{ section }}
       </h3>
     </div>
-    <div class="inventory-section" v-if="activeSection">
+    <div class="inventory-section" v-if="activeSection"  v-show="inventoryOpen">
       <div class="inventory-section-content">
         <DataSheet v-for="sheet in sections[activeSection]" :key="sheet.id" :sheet="sheet" @select="selectSheet"/>
       </div>
@@ -27,6 +28,10 @@ export default {
     DataSheet,
   },
   props: {
+    inventoryOpen: {
+      type: Boolean,
+      required: true,
+    },
     sheets: {
       type: Array,
       default: () => [],
@@ -34,7 +39,7 @@ export default {
   },
   data() {
     return {
-      activeSection: null,
+      activeSection: "Info",
     };
   },
   created() {
@@ -52,25 +57,45 @@ export default {
         return sections;
       }, {});
     },
+    inventoryStyle() {
+      if (this.inventoryOpen) {
+        return {
+          height: '20%',  // adjust this to your needs
+          overflow: 'auto',  // to enable scroll if the content exceeds the container
+        }
+      } else {
+        return {
+          height: '50px',
+        }
+      }
+    }
   },
   methods: {
     selectSheet(sheet) {
       this.$emit('select', sheet);
     },
+    toggleInventory() {
+      this.$emit('toggle-inventory');
+    }
   },
 };
 </script>
-  
+
 <style scoped>
 .data-inventory {
+  position: relative;
+  bottom: 0px;
   width: 100%;
-  height:25%;
-  padding: 5px;
-  background: #fff;
-  border-radius: 5px;
-  margin-top: 5px;
+  background: lightblue;
+  z-index: 200;
+  transition: height 0.3s ease-in-out; /* animate the height change */
 }
 
+.close-button {
+  position: absolute;
+  right: 15px;
+  top: 10px;
+}
 .inventory-tabs {
   display: flex;
   justify-content: flex-start;  /* Updated this line */

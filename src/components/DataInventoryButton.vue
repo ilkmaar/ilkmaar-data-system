@@ -19,4 +19,4 @@
   .inventory-button {
     margin-right: 10px;
   }
-</style>  
+</style>
