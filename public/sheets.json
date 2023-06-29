@@ -2,18 +2,6 @@
     "pinnedSheets": ["1"],
     "dockSheets": ["2", "3"],
     "inventorySheets": ["1", "2", "3"],
-    "sections": [
-      {
-        "id": "1",
-        "title": "Info",
-        "sheets": ["1", "2"]
-      },
-      {
-        "id": "2",
-        "title": "Creature Data",
-        "sheets": ["3"]
-      }
-    ],
     "sheets": [
       {
         "id": "1",

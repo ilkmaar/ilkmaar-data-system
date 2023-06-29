@@ -6,7 +6,7 @@
 
     <select class="area-select" v-model="selectedArea">
       <option disabled value="">Select an Area</option>
-      <option v-for="area in areas" :key="area.name" :value="area.name">{{ area.name }}</option>
+      <option v-for="area in areas" :key="area.location_group_name" :value="area.location_group_name">{{ area.location_group_name }}</option>
     </select>
 
     <select class="area-source-select" v-model="selectedSource">
@@ -19,6 +19,8 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   name: 'WorldInteractor',
   props: {
@@ -29,22 +31,18 @@ export default {
   },
   data() {
     return {
-      areas: [
-          {"name": "Main Island"}, 
-          {"name": "Potions Clinic"},
-          {"name": "Shadow Island"}
-      ],
+      areas: [],
       sources: [
           {
           "id": "1",
-          "text": "Log?"
+          "text": "Visitor Log"
           },
           {
           "id": "2",
           "text": "Watcher?"
           }
       ],
-      selectedArea: "Main Island",
+      selectedArea: null,
       selectedSource: "1",
       responseSheet: null
     };
@@ -71,6 +69,12 @@ export default {
         this.$emit('query-response', randomSheet);
     }
   },
+  created() {
+      axios.get('http://localhost:8000/location_groups').then(response => {
+        this.areas = response.data;
+        this.selectedArea = this.areas[0].location_group_name
+      });
+    },
   emits: ['query-response']
 };
 </script>

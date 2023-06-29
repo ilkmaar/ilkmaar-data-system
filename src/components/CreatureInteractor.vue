@@ -37,11 +37,11 @@
         questions: [
             {
             "id": "1",
-            "text": "Health?"
+            "text": "Gifts"
             },
             {
             "id": "2",
-            "text": "Locations?"
+            "text": "Interactions"
             }
         ],
         selectedCreature: "Aurora",
@@ -73,7 +73,6 @@
     created() {
       axios.get('http://localhost:8000/creatures').then(response => {
         this.creatures = response.data;
-        console.log(this.creatures)
       });
     },
     emits: ['query-response']

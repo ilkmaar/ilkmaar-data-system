@@ -47,7 +47,7 @@
 <script>
   import fakeData from './fakeData.js';
   import DataView from './DataView.vue';
-  import axios from 'axios';
+//  import axios from 'axios';
   
   export default {
     props: ['sheet'],
@@ -94,10 +94,9 @@
           this.selectedXColumn = this.sheet.metadata.default_column_x;
           this.selectedYColumn = this.sheet.metadata.default_column_y;
       }
-      axios.get('localhost:8000/creatures').then(response => {
-        this.creatures = response;
-      });
-      
+      // axios.get('localhost:8000/creatures').then(response => {
+      //   this.creatures = response;
+      // });
     }
   },
   watch: {
