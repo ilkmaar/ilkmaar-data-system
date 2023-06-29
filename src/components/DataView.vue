@@ -10,12 +10,12 @@
       </div>
     </div>
 </template>
-  
+
 <script>
   import { VuePlotly } from 'vue3-plotly';
   
   export default {
-    props: ['data', 'metadata', 'selectedXColumn', 'selectedYColumn', 'selectedRepresentation'],
+    props: ['data', 'columns', 'selectedXColumn', 'selectedYColumn', 'selectedRepresentation'],
     components: {
       VuePlotly
     },
@@ -26,19 +26,27 @@
     },
     methods: {
         table() {
-            if (!this.data) {
+            if (!this.data || !this.columns) {
                 return;
             }
+            console.log("drawing table");
+
+            const cellValues = this.columns.map(column => {
+                // Using the column.name to find the value in each row.
+                // If there's no data, it will generate an empty array.
+                return this.data.map(row => row[column.name] || "");
+            });
+
             this.graph = {
                 data: [{
                     type: 'table',
                     header: {
-                        values: this.metadata.columns.map(column => column.displayName),
+                        values: this.columns.map(column => column.displayName),
                         align: "left",
-                        fill_color: 'turquiose'
+                        fill_color: 'turquoise' // Please correct the typo in the color name
                     },
                     cells: {
-                        values: Object.keys(this.data[0]).map(key => this.data.map(row => row[key])),
+                        values: cellValues,
                         align: "left",
                         fill_color: 'lavender'
                     }
@@ -57,10 +65,18 @@
         },
 
         bar() {
-            if (!this.data) {
+            if (!this.data || !this.columns) {
                 return;
             }
-            console.log("bar");
+            console.log("drawing bar");
+
+            const xColumn = this.selectedXColumn || this.columns.find(column => column.scale === 'categorical');
+            const yColumn = this.selectedYColumn || this.columns.find(column => column.scale === 'numeric');
+
+            if (!xColumn || !yColumn) {
+                console.log('Appropriate columns not found for bar graph');
+                return;
+            }
 
             const color_dict = {
                 'Shadow': 'darkblue',
@@ -71,12 +87,12 @@
 
             this.graph = {
                 data: [{
-                type: 'bar',
-                x: this.data.map(row => row[this.selectedXColumn]),
-                y: this.data.map(row => row[this.selectedYColumn]),
-                marker: {
-                    color: this.data.map(row => color_dict[row[this.selectedXColumn]])
-                }
+                    type: 'bar',
+                    x: this.data.map(row => row[xColumn]),
+                    y: this.data.map(row => row[yColumn]),
+                    marker: {
+                        color: this.data.map(row => color_dict[row[xColumn]] || 'grey')  // Default color 'grey' if not found in color_dict
+                    }
                 }],
                 layout: {
                     autosize: true,
@@ -90,20 +106,27 @@
                     }
                 }
             };
-            },
+        },
 
         plot() {
-            if (!this.data) {
+            if (!this.data || !this.columns) {
                 return;
             }
-            console.log("plot");
+            console.log("drawing plot");
+            const xColumn = this.selectedXColumn || this.columns.find(column => column.scale === 'categorical');
+            const yColumn = this.selectedYColumn || this.columns.find(column => column.scale === 'numeric');
+
+            if (!xColumn || !yColumn) {
+                console.log('Appropriate columns not found for scatter plot');
+                return;
+            }
 
             this.graph = {
                 data: [{
-                type: 'scatter',
-                mode: 'markers',
-                    x: this.data.map(row => row[this.selectedXColumn]),
-                    y: this.data.map(row => row[this.selectedYColumn]),
+                    type: 'scatter',
+                    mode: 'markers',
+                    x: this.data.map(row => row[xColumn]),
+                    y: this.data.map(row => row[yColumn]),
                 }],
                 layout: {
                     autosize: true,
@@ -122,7 +145,7 @@
             if (!this.data) {
                 return;
             }
-            console.log("map");
+            console.log("drawing map");
 
             this.graph = {
                 data: [{
@@ -158,17 +181,52 @@
                 }
             };
         },
+        selectAndCreateRepresentation() {
+            switch(this.selectedRepresentation) {
+                    case 'table':
+                        console.log("choosing table")
+                        this.table();
+                        break;
+                    case 'bar':
+                        console.log("choosing bar")
+                        this.bar();
+                        break;
+                    case 'plot':
+                        console.log("choosing plot")
+                        this.plot();
+                        break;
+                    case 'map':
+                        console.log("choosing map")
+                        this.map();
+                        break;
+                    default:
+                        console.log("error")
+                        break;
+                }
+        }
     },
     created() {
-        this.table();
+        this.selectAndCreateRepresentation()
     },
     watch: {
         data: {
             immediate: true,
             handler(newData) {
-                // Call the correct method based on the representation
-                console.log(newData);
-                this.table()
+                if (!newData) {
+                    return;
+                }
+                console.log("new data")
+                this.selectAndCreateRepresentation();
+            }
+        },
+        columns: {
+            immediate: true,
+            handler(newColumns) {
+                if (!newColumns) {
+                    return;
+                }
+                console.log("new columns")
+                this.selectAndCreateRepresentation();
             }
         },
         selectedRepresentation: {
@@ -177,83 +235,28 @@
                 if (!new_representation) {
                     return;
                 }
-                // Call the correct method based on the representation
-                console.log("metadatachanged: ", new_representation);
-                switch(new_representation.id) {
-                    case 'table':
-                        this.table();
-                        break;
-                    case 'bar':
-                        this.bar();
-                        break;
-                    case 'plot':
-                        this.plot();
-                        break;
-                    case 'map':
-                        this.map();
-                        break;
-                    default:
-                        console.log("error")
-                        break;
-                }
+                console.log("new representation")
+                this.selectAndCreateRepresentation();
             }
         },
         selectedXColumn: {
             immediate: true,
             handler(new_column) {
-                console.log("selected x column changed 2")
-
                 if (!new_column) {
                     return;
                 }
-                // Call the correct method based on the representation
-                console.log("column changed: ", new_column);
-                
-                switch(this.selectedRepresentation.id) {
-                    case 'table':
-                        this.table();
-                        break;
-                    case 'bar':
-                        this.bar();
-                        break;
-                    case 'plot':
-                        this.plot();
-                        break;
-                    case 'map':
-                        this.map();
-                        break;
-                    default:
-                        console.log("error")
-                        break;
-                }
+                console.log("new X column")
+                this.selectAndCreateRepresentation();
             }
         },
         selectedYColumn: {
             immediate: true,
             handler(new_column) {
-                // Call the correct method based on the representation
                 if (!new_column) {
                     return;
                 }
-                console.log("metadatachanged: ", new_column);
-
-                switch(this.selectedRepresentation.id) {
-                    case 'table':
-                        this.table();
-                        break;
-                    case 'bar':
-                        this.bar();
-                        break;
-                    case 'plot':
-                        this.plot();
-                        break;
-                    case 'map':
-                        this.map();
-                        break;
-                    default:
-                        console.log("error")
-                        break;
-                }
+                console.log("new Y column")
+                this.selectAndCreateRepresentation();
             }
         }
     }

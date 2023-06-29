@@ -4,19 +4,19 @@
         <p class="creature-interactor-title">Creature Interactor</p>
       </div>
 
-      <img v-if="selectedCreature" :src="getCreatureImage(selectedCreature)" alt="creature" />
+      <img v-if="selectedCreatureName" :src="getCreatureImage(selectedCreatureName)" alt="creature" />
   
-      <select class="creature-select" v-model="selectedCreature">
+      <select class="creature-select" v-model="selectedCreatureName">
         <option disabled value="">Select a Creature</option>
         <option v-for="creature in creatures" :key="creature.creature_name" :value="creature.creature_name">{{ creature.creature_name }}</option>
       </select>
   
       <select class="creature-question-select" v-model="selectedQuestion">
         <option disabled value="">Select a Question</option>
-        <option v-for="question in questions" :key="question.id" :value="question.id">{{ question.text }}</option>
+        <option v-for="question in questions" :key="question.id" :value="question.text">{{ question.text }}</option>
       </select>
   
-      <button @click="query">Query</button>
+      <button @click="generateSheet">Query</button>
     </div>
 </template>
 
@@ -44,15 +44,15 @@
             "text": "Interactions"
             }
         ],
-        selectedCreature: "Aurora",
-        selectedQuestion: "1",
+        selectedCreatureName: "Aurora",
+        selectedQuestion: "Gifts",
         responseSheet: null
       };
     },
     methods: {
       getCreatureImage(creature) {
         // here you should return the URL of the image based on the creature name
-        if(creature) {
+        if(creature.creature_name) {
             return("creature.jpeg");        
         }
         else {
@@ -68,12 +68,47 @@
 
         // Emit the random value
         this.$emit('query-response', randomSheet);
+      },
+      generateSheet() {
+        var baseUrl = "http://localhost:8000/"
+        var endpoint = '';
+        var metadataEndpoint = '';
+
+        switch(this.selectedQuestion) {
+            case 'Gifts':
+                endpoint = 'creatureGifts';
+                metadataEndpoint = 'creatureGifts/metadata';
+                break;
+            case 'Interactions':
+                endpoint = 'creatureInteractions';
+                metadataEndpoint = 'creatureInteractions/metadata';
+                break;
+        }
+
+        var baseQuery = "?creatureName=" + this.selectedCreatureName
+        var query = baseUrl + endpoint + baseQuery;
+
+        var newSheet = {};
+        // Fetch metadata from the server
+        axios.get(baseUrl + metadataEndpoint)
+        .then(response => {
+            // create sheet object
+            //newSheet.id = this.generateUniqueId(); // implement this function to generate a unique ID
+            newSheet.title = `${this.selectedCreatureName}'s ${this.selectedQuestion}`;
+            newSheet.type = "Creature Data"; // or other type depending on the selected question
+            newSheet.sqlQuery = query; 
+            newSheet.icon = "icon.png";
+            newSheet.metadata = response.data; // use the returned metadata
+
+            // Emit the random value
+            this.$emit('query-response', newSheet);
+        });
       }
     },
     created() {
-      axios.get('http://localhost:8000/creatures').then(response => {
-        this.creatures = response.data;
-      });
+        axios.get('http://localhost:8000/creatures').then(response => {
+          this.creatures = response.data;
+        });
     },
     emits: ['query-response']
   };

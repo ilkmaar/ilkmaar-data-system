@@ -6,14 +6,15 @@
       <button @click="openSheetInDataVisualizer">Explore</button>
     </div>
     <div class="data-view" v-if="data">
-        <DataView :data="data" :metadata="metadata" />
+        <DataView :data="data" :columns="columns" :selectedXColumn="selectedXColumn" :selectedYColumn="selectedYColumn" :selectedRepresentation="selectedRepresentation"/>
     </div>
   </div>
 </template>
 
 <script>
-import data from './fakeData.js';
+//import data from './fakeData.js';
 import DataView from './DataView.vue';
+import axios from 'axios';
 
 export default {
   name: 'QuickView',
@@ -21,7 +22,7 @@ export default {
     sheet: {
       type: Object,
       required: true,
-    },
+    }
   },
   components: {
     DataView
@@ -29,7 +30,10 @@ export default {
   data() {
     return {
       data: null,
-      metadata: null
+      columns: this.sheet.metadata.columns,
+      selectedXColumn: this.sheet.metadata.selectedXColumn || this.sheet.metadata.default_column_x,
+      selectedYColumn: this.sheet.metadata.selectedYColumn || this.sheet.metadata.default_column_y,
+      selectedRepresentation: this.sheet.metadata.defaultView || this.sheet.metadata.defaultView
     };
   },
   methods: {
@@ -44,31 +48,24 @@ export default {
     },
     fetchData() {
       if (this.sheet) {
-          this.data = data[this.sheet.id];
-          this.metadata = this.sheet.metadata;
-          this.metadata.representation = this.sheet.metadata.defaultView;
-          this.metadata.representation = this.sheet.metadata.defaultView;
-          this.metadata.representation = this.sheet.metadata.defaultView;
+          axios.get(this.sheet.sqlQuery)
+            .then(response => {
+                this.data = response.data; // use the returned metadata
+            });
       }
     }
   },
   watch: {
-      sheet: {
-        immediate: true,
-        handler(newSheet) {
-          if (newSheet) {
-            this.fetchData();
-
-            // set default representation
-            //const defaultRepresentation = this.representations.find(representation => representation.id === newSheet.metadata.defaultView);
-            //this.selectRepresentation(defaultRepresentation || 'table');
-
-            // set default columns
-            //this.selectedXColumn = newSheet.metadata.default_column_x || '';
-            //this.selectedYColumn = newSheet.metadata.default_column_y || '';
-          }
+    sheet: {
+      immediate: true,
+      handler(newSheet) {
+        if (newSheet) {
+          this.fetchData();
+        } else {
+          console.log("sheet");
         }
-      }
+      },
+    }
   }
 };
 </script>

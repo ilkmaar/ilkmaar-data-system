@@ -7,7 +7,7 @@
     </div>
     <div class="game-container">
       <GameWindow :sheets="sheets" @openSheetInDataVisualizer="openSheetInDataVisualizer" @addSheetToInventory="addSheetToInventory" />
-      <DataVisualizer v-if="sheetSelectedToVisualize" :sheet="sheetSelectedToVisualize" @deselect="deselectSheet" @togglePinSheet="togglePinSheet"/>
+      <DataVisualizer v-if="sheetSelectedToVisualize" :sheet="sheetSelectedToVisualize" @saveSheet="saveSheet" @deselect="deselectSheet" @togglePinSheet="togglePinSheet"/>
     </div>
     <DataInventory :sheets="inventorySheets" :inventoryOpen="inventoryOpen" @select="selectSheet" @toggle-inventory="toggleInventory"/>
   </div>
@@ -50,9 +50,15 @@ export default {
       this.sheetSelectedToVisualize = null;
     },
 
+    saveSheet(selectedRepresentation, selectedXColumn, selectedYColumn) {
+        this.sheetSelectedToVisualize.metadata.selectedRepresentation = selectedRepresentation;
+        this.sheetSelectedToVisualize.metadata.selectedXColumn = selectedXColumn;
+        this.sheetSelectedToVisualize.metadata.selectedYColumn = selectedYColumn;
+
+        this.addSheetToInventory(this.sheetSelectedToVisualize)
+    },
+
     togglePinSheet(sheet_to_toggle) {
-      // if the selectedSheet is in pinnedSheets, remove it
-      // otherwise, add it
       const index = this.pinnedSheets.findIndex(sheet => sheet.id === sheet_to_toggle.id);
       if (index > -1) {
         this.pinnedSheets.splice(index, 1);
@@ -62,7 +68,6 @@ export default {
     },
 
     addSheetToInventory(sheet_to_add) {
-      console.log("adding sheet to inventory")
       // first, remove the selected sheet if it's already in inventorySheets
       const index = this.inventorySheets.findIndex(sheet => sheet.id === sheet_to_add.id);
       if (index > -1) {

@@ -48,6 +48,7 @@ export default {
     queryResponse(sheet) {
       this.sheet = sheet;
       this.dataSheetVisible = true;
+      console.log("gamewindow received sheet: ", sheet)
     },
 
     trashSheet(sheet) {

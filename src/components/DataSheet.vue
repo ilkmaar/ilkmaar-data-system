@@ -42,19 +42,22 @@ export default {
     },
   },
   computed: {
-    outerColor() {
-      switch(this.sheet.metadata.defaultView) {
-        case 'table':
-          return("black")
-        case 'bar':
-          return("red")
-        case 'plot':
-          return("green")
-        case 'map':
-          return("blue")
-        default:
-          return("black")
+  outerColor() {
+    if (this.sheet && this.sheet.metadata) {
+        switch (this.sheet.metadata.defaultView) {
+          case 'table':
+            return "black";
+          case 'bar':
+            return "red";
+          case 'plot':
+            return "green";
+          case 'map':
+            return "blue";
+          default:
+            return "black";
+        }
       }
+      return "black";  // Default color if this.sheet or this.sheet.metadata is not available
     }
   }
 };

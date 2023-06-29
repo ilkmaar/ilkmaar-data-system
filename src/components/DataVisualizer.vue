@@ -9,11 +9,15 @@
           <button class="close-button" @click="deselectSheet">CLOSE</button>
         </div>
 
+        <div class="tools-bar">
+          <button class="save-button" @click="saveSheet">SAVE</button>
+        </div>
+
         <div class="representation-selectors">
           <button 
             v-for="representation in representations" 
-            :key="representation.id" 
-            :class="{'selected': representation.id === selectedRepresentation.id}"
+            :key="representation.id"
+            :class="{'selected': representation.id === selectedRepresentation}"
             @click="selectRepresentation(representation)"
             :disabled="!isRepresentationAvailable(representation)"
           >
@@ -21,20 +25,20 @@
           </button>
         </div>
   
-        <div class="axis-selectors" v-if="selectedRepresentation.id === 'plot' || selectedRepresentation.id === 'bar'">
+        <div class="axis-selectors" v-if="selectedRepresentation === 'plot' || selectedRepresentation === 'bar'">
           <select v-model="selectedXColumn">
             <option disabled value="">Select X column</option>
-            <option v-for="column in sheet.metadata.columns" :key="column.name" :value="column.name">{{ column.displayName }}</option>
+            <option v-for="column in columns" :key="column.name" :value="column.name">{{ column.displayName }}</option>
           </select>
           <span>vs.</span>
           <select v-model="selectedYColumn">
             <option disabled value="">Select Y column</option>
-            <option v-for="column in sheet.metadata.columns" :key="column.name" :value="column.name">{{ column.displayName }}</option>
+            <option v-for="column in columns" :key="column.name" :value="column.name">{{ column.displayName }}</option>
           </select>
         </div>
 
         <div class="data-view-container" v-if="data">
-            <DataView :data="data" :metadata="metadata" :selectedRepresentation="selectedRepresentation" :selectedXColumn="selectedXColumn" :selectedYColumn="selectedYColumn"/>
+            <DataView :data="data" :columns="columns" :selectedRepresentation="selectedRepresentation" :selectedXColumn="selectedXColumn" :selectedYColumn="selectedYColumn"/>
         </div>
 
       </div>
@@ -43,21 +47,25 @@
       <p>Please select a data sheet to visualize.</p>
     </div>
 </template>
-  
+
 <script>
-  import fakeData from './fakeData.js';
+//  import fakeData from './fakeData.js';
   import DataView from './DataView.vue';
-//  import axios from 'axios';
+  import axios from 'axios';
   
   export default {
-    props: ['sheet'],
+    props: {
+      sheet: {
+        type: Object,
+        required: true,
+      },
+    },
     components: {
       DataView
-    },  
+    },
     data() {
         return {
             data: null,
-            metadata: null,
             graph: null,
             representations: [
                 { id: 'table', name: 'Table' },
@@ -65,7 +73,9 @@
                 { id: 'plot', name: 'Plot' },
                 { id: 'map', name: 'Map' },
             ],
-            selectedRepresentation: { id: 'table', name: 'Table' },
+            metadata: {},
+            columns: [],
+            selectedRepresentation: '',
             selectedXColumn: '',
             selectedYColumn: '',
         };
@@ -78,43 +88,48 @@
       this.$emit('deselect', this.sheet);
     },
     selectRepresentation(representation) {
-      this.selectedRepresentation = representation;
-      this.metadata.representation = representation.id;
+      this.selectedRepresentation = representation.id;
     },
     isRepresentationAvailable(representation) {
       if (representation.id === 'map') {
-        return this.sheet && this.sheet.metadata.columns && this.sheet.metadata.columns.some(column => column.type === 'location');
+        return this.columns && this.columns.some(column => column.name === 'location_x' || column.name === 'location_y');
       }
       return true;
     },
+    saveSheet() {
+        this.$emit('saveSheet', this.selectedRepresentation, this.selectedXColumn, this.selectedYColumn);
+    },
     fetchData() {
       if (this.sheet) {
-          this.data = fakeData[this.sheet.id];
-          this.metadata = this.sheet.metadata;
-          this.selectedXColumn = this.sheet.metadata.default_column_x;
-          this.selectedYColumn = this.sheet.metadata.default_column_y;
+          axios.get(this.sheet.sqlQuery)
+            .then(response => {
+                this.data = response.data; // use the returned metadata
+          });
       }
-      // axios.get('localhost:8000/creatures').then(response => {
-      //   this.creatures = response;
-      // });
     }
   },
   watch: {
-      sheet: {
-        immediate: true,
-        handler(newSheet) {
-          if (newSheet) {
-            this.fetchData();
-          }
-        },
+    sheet: {
+      immediate: true,
+      handler(newSheet) {
+        if (newSheet) {
+          this.metadata = newSheet.metadata;
+          this.columns = newSheet.metadata.columns;
+          console.log("sheet: ", newSheet)
+          this.selectedRepresentation = newSheet.metadata.selectedRepresentation || newSheet.metadata.defaultView;
+          this.selectedXColumn = newSheet.metadata.selectedXColumn || newSheet.metadata.default_column_x;
+          this.selectedYColumn = newSheet.metadata.selectedYColumn || newSheet.metadata.default_column_y;
+          console.log("selectedRepresentation: ", this.selectedRepresentation)
+          this.fetchData();
+        } else {
+          this.metadata = {};
+          this.columns = [];
+          this.selectedRepresentation = "";
+          this.selectedXColumn = "";
+          this.selectedYColumn = "";
+        }
       },
-      selectedXColumn: function (x_column) {
-        console.log("selected x column changed 1")
-        this.metadata.selectedXColumn = x_column;
-      },
-      selectedYColumn: function (y_column) {
-        this.metadata.selectedYColumn = y_column;
-      },
+    }
   }
 };
 </script>
@@ -151,6 +166,13 @@
   height: 50px;
 }
 
+.tools-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 50px;
+}
+
 .title-container {
   text-align: center;
   flex-grow: 1;
@@ -168,6 +190,12 @@
   cursor: pointer;
 }
 .close-button {
+  background: none;
+  border: none;
+  font-size: 1.5em;
+  cursor: pointer;
+}
+.save-button {
   background: none;
   border: none;
   font-size: 1.5em;
