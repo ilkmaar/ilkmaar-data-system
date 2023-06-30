@@ -110,7 +110,7 @@ export default {
     },
   },
   created() {
-    axios.get('http://localhost:8000/players')
+    axios.get('http://localhost:8000/players/list')
       .then(response => {
         this.players = response.data;
         this.selectedPlayerName = this.players[7].player_name;

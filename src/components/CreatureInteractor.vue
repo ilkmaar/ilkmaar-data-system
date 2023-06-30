@@ -90,7 +90,7 @@
             newSheet.id = this.generateUniqueId(); // implement this function to generate a unique ID
             newSheet.title = `${this.selectedCreatureName}'s ${this.selectedQuestion}`;
             newSheet.type = "Creature Data"; // or other type depending on the selected question
-            newSheet.sqlQuery = query; 
+            newSheet.endpoint = query; 
             newSheet.icon = "icon.png";
             newSheet.metadata = response.data; // use the returned metadata
 
@@ -100,7 +100,7 @@
       }
     },
     created() {
-        axios.get('http://localhost:8000/creatures').then(response => {
+        axios.get('http://localhost:8000/creatures/list').then(response => {
           this.creatures = response.data;
         });
     },
