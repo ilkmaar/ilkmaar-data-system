@@ -1,12 +1,15 @@
 <template>
   <div id="app">
     <div class="top-bar">
+      <select v-model="selectedPlayerName">
+        <option v-for="player in players" :key="player.player_id" :value="player.player_name">{{ player.player_name }}</option>
+      </select>
       <DataDock :sheets="pinnedSheets" @select="selectSheet" />
       <div class="divider"></div>
       <DataDock :sheets="dockedSheets" @select="selectSheet" />
     </div>
     <div class="game-container">
-      <GameWindow :sheets="sheets" @openSheetInDataVisualizer="openSheetInDataVisualizer" @addSheetToInventory="addSheetToInventory" />
+      <GameWindow :player="selectedPlayerName" :sheets="sheets" @openSheetInDataVisualizer="openSheetInDataVisualizer" @addSheetToInventory="addSheetToInventory" />
       <DataVisualizer v-if="sheetSelectedToVisualize" :sheet="sheetSelectedToVisualize" @saveSheet="saveSheet" @deselect="deselectSheet" @togglePinSheet="togglePinSheet"/>
     </div>
     <DataInventory :sheets="inventorySheets" :inventoryOpen="inventoryOpen" @select="selectSheet" @toggle-inventory="toggleInventory"/>
@@ -36,6 +39,8 @@ export default {
       dockedSheets: [],
       sheetSelectedToVisualize: null,
       inventoryOpen: false,
+      selectedPlayerName: null, // New property for storing the selected player ID
+      players: [] // Array to store the list of players
     };
   },
   methods: {
@@ -105,6 +110,15 @@ export default {
     },
   },
   created() {
+    axios.get('http://localhost:8000/players')
+      .then(response => {
+        this.players = response.data;
+        this.selectedPlayerName = this.players[7].player_name;
+      })
+      .catch(error => {
+        console.error('Failed to fetch players:', error);
+    });
+
     axios.get('/sheets.json').then(response => {
       const data = response.data;
       this.sheets = data.sheets;

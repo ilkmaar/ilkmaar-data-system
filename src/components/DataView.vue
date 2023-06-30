@@ -70,8 +70,11 @@
             }
             console.log("drawing bar");
 
-            const xColumn = this.selectedXColumn || this.columns.find(column => column.scale === 'categorical');
-            const yColumn = this.selectedYColumn || this.columns.find(column => column.scale === 'numeric');
+            const xColumnKey = this.selectedXColumn || this.columns.find(column => column.scale === 'categorical').name;
+            const yColumnKey = this.selectedYColumn || this.columns.find(column => column.scale === 'numeric').name;
+
+            const xColumn = this.columns.find(column => column.name === xColumnKey);
+            const yColumn = this.columns.find(column => column.name === yColumnKey);
 
             if (!xColumn || !yColumn) {
                 console.log('Appropriate columns not found for bar graph');
@@ -88,10 +91,10 @@
             this.graph = {
                 data: [{
                     type: 'bar',
-                    x: this.data.map(row => row[xColumn]),
-                    y: this.data.map(row => row[yColumn]),
+                    x: this.data.map(row => row[xColumnKey]),
+                    y: this.data.map(row => row[yColumnKey]),
                     marker: {
-                        color: this.data.map(row => color_dict[row[xColumn]] || 'grey')  // Default color 'grey' if not found in color_dict
+                        color: this.data.map(row => color_dict[row[xColumnKey]] || 'grey')  // Default color 'grey' if not found in color_dict
                     }
                 }],
                 layout: {
@@ -103,7 +106,9 @@
                         b: 5,
                         t: 5,
                         pad: 5
-                    }
+                    },
+                    xaxis: {title: xColumn.displayName},
+                    yaxis: {title: yColumn.displayName}
                 }
             };
         },
@@ -113,8 +118,12 @@
                 return;
             }
             console.log("drawing plot");
-            const xColumn = this.selectedXColumn || this.columns.find(column => column.scale === 'categorical');
-            const yColumn = this.selectedYColumn || this.columns.find(column => column.scale === 'numeric');
+
+            const xColumnKey = this.selectedXColumn || this.columns.find(column => column.scale === 'categorical').name;
+            const yColumnKey = this.selectedYColumn || this.columns.find(column => column.scale === 'numeric').name;
+
+            const xColumn = this.columns.find(column => column.name === xColumnKey);
+            const yColumn = this.columns.find(column => column.name === yColumnKey);
 
             if (!xColumn || !yColumn) {
                 console.log('Appropriate columns not found for scatter plot');
@@ -125,8 +134,8 @@
                 data: [{
                     type: 'scatter',
                     mode: 'markers',
-                    x: this.data.map(row => row[xColumn]),
-                    y: this.data.map(row => row[yColumn]),
+                    x: this.data.map(row => row[xColumnKey]),
+                    y: this.data.map(row => row[yColumnKey]),
                 }],
                 layout: {
                     autosize: true,
@@ -136,7 +145,9 @@
                         b: 5,
                         t: 5,
                         pad: 5
-                    }
+                    },
+                    xaxis: {title: xColumn.displayName},
+                    yaxis: {title: yColumn.displayName}
                 }
             };
         },

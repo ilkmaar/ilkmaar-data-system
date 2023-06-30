@@ -3,7 +3,7 @@
     <div class="game-background"></div>
     <div class="game-content">
       <div>
-        <WorldInteractor :sheets="sheets" @query-response="queryResponse" />
+        <WorldInteractor :player="player" :sheets="sheets" @query-response="queryResponse" />
         <CreatureInteractor :sheets="sheets" @query-response="queryResponse" />
       </div>
       <DataSheet v-if="dataSheetVisible" :sheet="sheet" @select="sheetClicked"/>
@@ -27,6 +27,10 @@ export default {
     WorldInteractor
   },
   props: {
+    player: {
+      type: String, // or whatever type `player` should be
+      required: false,
+    },
     sheets: {
       type: Array,
       required: false,

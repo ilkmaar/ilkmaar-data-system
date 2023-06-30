@@ -48,7 +48,7 @@ export default {
     },
     fetchData() {
       if (this.sheet) {
-          axios.get(this.sheet.sqlQuery)
+          axios.get(this.sheet.endpoint)
             .then(response => {
                 this.data = response.data; // use the returned metadata
             });

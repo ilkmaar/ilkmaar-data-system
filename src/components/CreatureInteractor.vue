@@ -22,6 +22,7 @@
 
 <script>
   import axios from 'axios';
+  import { v4 as uuidv4 } from 'uuid';
 
   export default {
     name: 'CreatureInteractor',
@@ -50,6 +51,9 @@
       };
     },
     methods: {
+      generateUniqueId() {
+          return uuidv4();
+      },
       getCreatureImage(creature) {
         // here you should return the URL of the image based on the creature name
         if(creature.creature_name) {
@@ -59,29 +63,19 @@
             return("creature.jpeg");
         }
       },
-      query() {
-        // Get a random index from the array
-        const randomIndex = Math.floor(Math.random() * this.sheets.length);
-
-        // Get the random value from the array
-        const randomSheet = this.sheets[randomIndex];
-
-        // Emit the random value
-        this.$emit('query-response', randomSheet);
-      },
       generateSheet() {
-        var baseUrl = "http://localhost:8000/"
+        var baseUrl = "http://localhost:8000"
         var endpoint = '';
         var metadataEndpoint = '';
 
         switch(this.selectedQuestion) {
             case 'Gifts':
-                endpoint = 'creatureGifts';
-                metadataEndpoint = 'creatureGifts/metadata';
+                endpoint = '/creatures/gifts';
+                metadataEndpoint = '/creatures/gifts/metadata';
                 break;
             case 'Interactions':
-                endpoint = 'creatureInteractions';
-                metadataEndpoint = 'creatureInteractions/metadata';
+                endpoint = '/creatures/interactions';
+                metadataEndpoint = '/creatures/interactions/metadata';
                 break;
         }
 
@@ -93,7 +87,7 @@
         axios.get(baseUrl + metadataEndpoint)
         .then(response => {
             // create sheet object
-            //newSheet.id = this.generateUniqueId(); // implement this function to generate a unique ID
+            newSheet.id = this.generateUniqueId(); // implement this function to generate a unique ID
             newSheet.title = `${this.selectedCreatureName}'s ${this.selectedQuestion}`;
             newSheet.type = "Creature Data"; // or other type depending on the selected question
             newSheet.sqlQuery = query; 

@@ -6,24 +6,29 @@
 
     <select class="area-select" v-model="selectedArea">
       <option disabled value="">Select an Area</option>
-      <option v-for="area in areas" :key="area.location_group_name" :value="area.location_group_name">{{ area.location_group_name }}</option>
+      <option v-for="area in areas" :key="area.area" :value="area">{{ area.area }}</option>
     </select>
 
-    <select class="area-source-select" v-model="selectedSource">
+    <select class="area-source-select" v-model="selectedSource" v-if="selectedArea">
       <option disabled value="">Select a Source</option>
-      <option v-for="source in sources" :key="source.id" :value="source.id">{{ source.text }}</option>
+      <option v-for="source in selectedArea.dataSources" :key="source.source" :value="source">{{ source.source }}</option>
     </select>
 
-    <button @click="query">Query</button>
+    <button @click="generateSheet">Query</button>
   </div>
 </template>
 
 <script>
 import axios from 'axios';
+import { v4 as uuidv4 } from 'uuid';
 
 export default {
   name: 'WorldInteractor',
   props: {
+    player: {
+      type: String,
+      required: false,
+    },
     sheets: {
       type: Array,
       required: false,
@@ -32,52 +37,70 @@ export default {
   data() {
     return {
       areas: [],
-      sources: [
-          {
-          "id": "1",
-          "text": "Visitor Log"
-          },
-          {
-          "id": "2",
-          "text": "Watcher?"
-          }
-      ],
       selectedArea: null,
-      selectedSource: "1",
+      selectedSource: null,
       responseSheet: null
     };
   },
   methods: {
     getWorldAreaImage(selectedArea) {
-      // here you should return the URL of the image based on the creature name
       if(selectedArea) {
-          return("creature.jpeg");        
-      }
-      else {
-          return("creature.jpeg");
+        return("creature.jpeg");        
+      } else {
+        return("creature.jpeg");
       }
     },
+    generateUniqueId() {
+      return uuidv4();
+    },
     query() {
-        // Get a random index from the array
         const randomIndex = Math.floor(Math.random() * this.sheets.length);
-
-        // Get the random value from the array
         const randomSheet = this.sheets[randomIndex];
-
-        console.log(randomSheet)
-        // Emit the random value
         this.$emit('query-response', randomSheet);
+    },
+    generateSheet() {
+      if(this.selectedArea.area !== "Misc") {
+            this.query();
+            return;
+        }
+        var baseUrl = "http://localhost:8000"        
+        var endpoint = this.selectedSource.endpoint;
+        var metadataEndpoint = endpoint + "/metadata";
+        var baseQuery = endpoint.startsWith("/players") ? `?playerName=${this.player}` : "";
+        var query = baseUrl + endpoint + baseQuery;
+        var playerEndpoints = ["/foraging", "/gifting", "/crafting", "/trash"]
+
+        var sendPlayerName = playerEndpoints.includes(endpoint)
+
+        var newSheet = {};
+        axios.get(baseUrl + metadataEndpoint)
+        .then(response => {            
+            newSheet.id = this.generateUniqueId();
+            newSheet.title = `${sendPlayerName ? this.player + "'s " : ""}${this.selectedSource.source}`;
+            newSheet.type = endpoint.split('/')[1] + " Data";
+            newSheet.endpoint = query;
+            newSheet.icon = "icon.png";
+            newSheet.metadata = response.data;
+            this.$emit('query-response', newSheet);
+        });
     }
   },
   created() {
-      axios.get('http://localhost:8000/location_groups').then(response => {
+      axios.get('http://localhost:8000/meta/areas').then(response => {
         this.areas = response.data;
-        this.selectedArea = this.areas[0].location_group_name
+        this.selectedArea = this.areas[8]
+        this.selectedSource = this.selectedArea.dataSources[0]
       });
-    },
+  },
+  watch: {
+    selectedArea(newArea) {
+      this.selectedSource = newArea.dataSources[0];
+    }
+  }, 
   emits: ['query-response']
 };
 </script>
+
 
 <style>
 

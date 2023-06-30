@@ -101,7 +101,7 @@
     },
     fetchData() {
       if (this.sheet) {
-          axios.get(this.sheet.sqlQuery)
+          axios.get(this.sheet.endpoint)
             .then(response => {
                 this.data = response.data; // use the returned metadata
           });
@@ -113,20 +113,18 @@
       immediate: true,
       handler(newSheet) {
         if (newSheet) {
-          this.metadata = newSheet.metadata;
-          this.columns = newSheet.metadata.columns;
-          console.log("sheet: ", newSheet)
-          this.selectedRepresentation = newSheet.metadata.selectedRepresentation || newSheet.metadata.defaultView;
-          this.selectedXColumn = newSheet.metadata.selectedXColumn || newSheet.metadata.default_column_x;
-          this.selectedYColumn = newSheet.metadata.selectedYColumn || newSheet.metadata.default_column_y;
-          console.log("selectedRepresentation: ", this.selectedRepresentation)
-          this.fetchData();
+            this.metadata = newSheet.metadata;
+            this.columns = newSheet.metadata.columns;
+            this.selectedRepresentation = newSheet.metadata.selectedRepresentation || newSheet.metadata.defaultView;
+            this.selectedXColumn = newSheet.metadata.selectedXColumn || newSheet.metadata.default_column_x;
+            this.selectedYColumn = newSheet.metadata.selectedYColumn || newSheet.metadata.default_column_y;
+            this.fetchData();
         } else {
-          this.metadata = {};
-          this.columns = [];
-          this.selectedRepresentation = "";
-          this.selectedXColumn = "";
-          this.selectedYColumn = "";
+            this.metadata = {};
+            this.columns = [];
+            this.selectedRepresentation = "";
+            this.selectedXColumn = "";
+            this.selectedYColumn = "";
         }
       },
     }
