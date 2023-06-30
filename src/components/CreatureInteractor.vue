@@ -26,12 +26,7 @@
 
   export default {
     name: 'CreatureInteractor',
-    props: {
-        sheets: {
-            type: Array,
-            required: false,
-        },
-    },
+    props: {},
     data() {
       return {
         creatures: [],
@@ -89,7 +84,7 @@
             // create sheet object
             newSheet.id = this.generateUniqueId(); // implement this function to generate a unique ID
             newSheet.title = `${this.selectedCreatureName}'s ${this.selectedQuestion}`;
-            newSheet.type = "Creature Data"; // or other type depending on the selected question
+            newSheet.type = "Creatures Data"; // or other type depending on the selected question
             newSheet.endpoint = query; 
             newSheet.icon = "icon.png";
             newSheet.metadata = response.data; // use the returned metadata

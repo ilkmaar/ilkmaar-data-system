@@ -71,7 +71,7 @@
             console.log("drawing bar");
 
             const xColumnKey = this.selectedXColumn || this.columns.find(column => column.scale === 'categorical').name;
-            const yColumnKey = this.selectedYColumn || this.columns.find(column => column.scale === 'numeric').name;
+            const yColumnKey = this.selectedYColumn || this.columns.find(column => column.scale === 'numeric' || column.scale === 'linear').name;
 
             const xColumn = this.columns.find(column => column.name === xColumnKey);
             const yColumn = this.columns.find(column => column.name === yColumnKey);
@@ -108,7 +108,7 @@
                         pad: 5
                     },
                     xaxis: {title: xColumn.displayName},
-                    yaxis: {title: yColumn.displayName}
+                    yaxis: {title: yColumn.displayName},
                 }
             };
         },
@@ -119,8 +119,8 @@
             }
             console.log("drawing plot");
 
-            const xColumnKey = this.selectedXColumn || this.columns.find(column => column.scale === 'categorical').name;
-            const yColumnKey = this.selectedYColumn || this.columns.find(column => column.scale === 'numeric').name;
+            const xColumnKey = this.selectedXColumn // || this.columns.find(column => column.scale === 'categorical').name;
+            const yColumnKey = this.selectedYColumn // || this.columns.find(column => column.scale === 'numeric').name;
 
             const xColumn = this.columns.find(column => column.name === xColumnKey);
             const yColumn = this.columns.find(column => column.name === yColumnKey);
@@ -144,10 +144,10 @@
                         r: 5,
                         b: 5,
                         t: 5,
-                        pad: 5
+                        pad: 10
                     },
                     xaxis: {title: xColumn.displayName},
-                    yaxis: {title: yColumn.displayName}
+                    yaxis: {title: yColumn.displayName},
                 }
             };
         },
@@ -296,6 +296,7 @@
   max-height: 100%;
   max-width: 100%;
   padding: 0px;
-  margin:0px;
+  margin: 0px;
 }
+
 </style>

@@ -28,11 +28,7 @@ export default {
     player: {
       type: String,
       required: false,
-    },
-    sheets: {
-      type: Array,
-      required: false,
-    },
+    }
   },
   data() {
     return {
@@ -53,11 +49,6 @@ export default {
     generateUniqueId() {
       return uuidv4();
     },
-    query() {
-        const randomIndex = Math.floor(Math.random() * this.sheets.length);
-        const randomSheet = this.sheets[randomIndex];
-        this.$emit('query-response', randomSheet);
-    },
     generateSheet() {
       if(this.selectedArea.area !== "Misc") {
             this.query();
@@ -77,7 +68,11 @@ export default {
         .then(response => {            
             newSheet.id = this.generateUniqueId();
             newSheet.title = `${sendPlayerName ? this.player + "'s " : ""}${this.selectedSource.source}`;
-            newSheet.type = endpoint.split('/')[1] + " Data";
+            
+            let typeName = endpoint.split('/')[1];
+            typeName = typeName.charAt(0).toUpperCase() + typeName.slice(1);
+            newSheet.type = typeName + " Data";
+
             newSheet.endpoint = query;
             newSheet.icon = "icon.png";
             newSheet.metadata = response.data;

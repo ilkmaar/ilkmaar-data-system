@@ -1,16 +1,16 @@
 <template>
   <div id="app">
     <div class="top-bar">
-      <select v-model="selectedPlayerName">
-        <option v-for="player in players" :key="player.player_id" :value="player.player_name">{{ player.player_name }}</option>
+      <select class="player-selector" v-model="selectedPlayerName">
+        <option v-for="player in players" :key="player.name" :value="player.name">{{ player.name }}</option>
       </select>
       <DataDock :sheets="pinnedSheets" @select="selectSheet" />
       <div class="divider"></div>
       <DataDock :sheets="dockedSheets" @select="selectSheet" />
     </div>
     <div class="game-container">
-      <GameWindow :player="selectedPlayerName" :sheets="sheets" @openSheetInDataVisualizer="openSheetInDataVisualizer" @addSheetToInventory="addSheetToInventory" />
-      <DataVisualizer v-if="sheetSelectedToVisualize" :sheet="sheetSelectedToVisualize" @saveSheet="saveSheet" @deselect="deselectSheet" @togglePinSheet="togglePinSheet"/>
+      <GameWindow :player="selectedPlayerName" @openSheetInDataVisualizer="openSheetInDataVisualizer" @addSheetToInventory="addSheetToInventory" />
+      <DataVisualizer v-if="sheetSelectedToVisualize" :sheet="sheetSelectedToVisualize" @saveSheet="saveSheet" @craftSheet="craftSheet" @deselect="deselectSheet" @togglePinSheet="togglePinSheet"/>
     </div>
     <DataInventory :sheets="inventorySheets" :inventoryOpen="inventoryOpen" @select="selectSheet" @toggle-inventory="toggleInventory"/>
   </div>
@@ -22,6 +22,7 @@ import GameWindow from './components/GameWindow.vue'
 import DataInventory from './components/DataInventory.vue';
 import DataVisualizer from './components/DataVisualizer.vue';
 import axios from 'axios';
+import { v4 as uuidv4 } from 'uuid';
 
 export default {
   name: 'App',
@@ -33,26 +34,69 @@ export default {
   },
   data() {
     return {
-      sheets: [],
-      inventorySheets: [],
-      pinnedSheets: [],
-      dockedSheets: [],
+      players: [], // Array to store the list of players
+      selectedPlayerName: null, // New property for storing the selected player
       sheetSelectedToVisualize: null,
+      sheetToSquish: null,
       inventoryOpen: false,
-      selectedPlayerName: null, // New property for storing the selected player ID
-      players: [] // Array to store the list of players
+      crafting: false
     };
   },
   methods: {
     selectSheet(sheet) {
-      this.updateDock(sheet);
+      if(this.crafting) {
+          this.sheetToSquish = sheet;
+          this.squishSheets(this.sheetSelectedToVisualize, sheet)
+      } else {
+        this.updateDock(sheet);
+        this.sheetSelectedToVisualize = sheet;
+      }
+    },
 
-      // for now automatically select to visualize
-      this.sheetSelectedToVisualize = sheet;
+    generateUniqueId() {
+          return uuidv4();
     },
 
     deselectSheet() {
-      this.sheetSelectedToVisualize = null;
+        this.sheetSelectedToVisualize = null;
+        this.crafting = false;
+    },
+
+    craftSheet() {
+        this.crafting = true;
+    },
+
+    squishSheets(sheet1, sheet2) {
+        console.log("squishing sheet1: ", sheet1)
+        console.log("squishing sheet2: ", sheet2)
+
+        let baseUrl = 'http://localhost:8000'
+        let ep1 = sheet1.endpoint.split(baseUrl)[1];
+        let ep2 = sheet2.endpoint.split(baseUrl)[1];
+
+        console.log("endpoint1: ", ep1)
+        console.log("endpoint2: ", ep2)
+
+        let endpoint = baseUrl + '/squish' + ep1 + ep2;
+        console.log("endpoint: ", endpoint)
+
+        var newSheet = {};
+        axios.get(endpoint + '/metadata')
+          .then(response => {
+              newSheet.id = this.generateUniqueId();
+              newSheet.title = "Squished Sheet";
+              newSheet.type = "Squished Data";
+              newSheet.endpoint = endpoint;
+              newSheet.icon = "icon.png";
+              newSheet.metadata = response.data;
+
+              this.sheetToSquish = null;
+              this.crafting = false;
+              console.log("newSheet: ", newSheet)
+
+              this.addSheetToInventory(newSheet)
+              this.sheetSelectedToVisualize = newSheet;
+          });
     },
 
     saveSheet(selectedRepresentation, selectedXColumn, selectedYColumn) {
@@ -70,6 +114,7 @@ export default {
       } else {
         this.pinnedSheets.push(sheet_to_toggle);
       }
+      this.saveSheets();
     },
 
     addSheetToInventory(sheet_to_add) {
@@ -82,6 +127,7 @@ export default {
       // then, add the selected sheet to the top of dockedSheets
       this.inventorySheets.unshift(sheet_to_add);
       this.updateDock(sheet_to_add);
+      this.saveSheets();
     },
 
     openSheetInDataVisualizer(sheet) {
@@ -91,7 +137,7 @@ export default {
 
     updateDock(sheet_to_add) {
       // first, remove the selected sheet if it's already in dockedSheets
-      const index = this.dockedSheets.findIndex(sheet => sheet.id === sheet_to_add.id);
+      const index = this.dockedSheets.findIndex(sheet => sheet.title === sheet_to_add.title);
       if (index > -1) {
         this.dockedSheets.splice(index, 1);
       }
@@ -103,29 +149,50 @@ export default {
       if (this.dockedSheets.length > 5) {
         this.dockedSheets.pop();
       }
+      this.saveSheets();
     },
 
     toggleInventory() {
       this.inventoryOpen = !this.inventoryOpen;
     },
+
+    saveSheets() {
+      localStorage.setItem('sheets', JSON.stringify(this.players));
+    },
   },
   created() {
-    axios.get('http://localhost:8000/players/list')
-      .then(response => {
+    const saveState = false;
+    const localData = localStorage.getItem('sheets');
+    if (saveState && localData) {
+      this.players = JSON.parse(localData);
+      if(this.players.length > 0) {
+        this.selectedPlayerName = this.players[7].name;
+      }
+    } else {
+      axios.get('/sheets.json').then(response => {
         this.players = response.data;
-        this.selectedPlayerName = this.players[7].player_name;
-      })
-      .catch(error => {
-        console.error('Failed to fetch players:', error);
-    });
-
-    axios.get('/sheets.json').then(response => {
-      const data = response.data;
-      this.sheets = data.sheets;
-      this.pinnedSheets = this.sheets.filter(sheet => data.pinnedSheets.includes(sheet.id));
-      this.dockedSheets = this.sheets.filter(sheet => data.dockSheets.includes(sheet.id));
-      this.inventorySheets = this.sheets.filter(sheet => data.inventorySheets.includes(sheet.id));
-    });
+        if(this.players.length > 0) {
+          this.selectedPlayerName = this.players[7].name;
+        }
+        // save to local storage for future loads
+        localStorage.setItem('sheets', JSON.stringify(this.players));
+      });
+    }
+  },
+  computed: {
+      selectedPlayer() {
+        const player = this.players.find(p => p.name === this.selectedPlayerName);
+        return player ? player : null;
+      },
+      pinnedSheets() {
+        return this.selectedPlayer ? this.selectedPlayer.pinnedSheets : [];
+      },
+      dockedSheets() {
+        return this.selectedPlayer ? this.selectedPlayer.dockSheets : [];
+      },
+      inventorySheets() {
+        return this.selectedPlayer ? this.selectedPlayer.inventorySheets : [];
+      }
   },
 };
 </script>
@@ -148,6 +215,10 @@ export default {
   background: lightblue;
   color: #333;
   box-sizing: border-box;
+}
+
+.player-selector {
+  margin-left:15px;
 }
 
 .divider {

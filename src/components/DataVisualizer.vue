@@ -9,10 +9,6 @@
           <button class="close-button" @click="deselectSheet">CLOSE</button>
         </div>
 
-        <div class="tools-bar">
-          <button class="save-button" @click="saveSheet">SAVE</button>
-        </div>
-
         <div class="representation-selectors">
           <button 
             v-for="representation in representations" 
@@ -40,7 +36,10 @@
         <div class="data-view-container" v-if="data">
             <DataView :data="data" :columns="columns" :selectedRepresentation="selectedRepresentation" :selectedXColumn="selectedXColumn" :selectedYColumn="selectedYColumn"/>
         </div>
-
+        <div class="tools-bar">
+          <button class="craft-button" @click="craftSheet">CRAFT</button>
+          <button class="save-button" @click="saveSheet">SAVE</button>
+        </div>
       </div>
     </div>
     <div v-else>
@@ -49,7 +48,6 @@
 </template>
 
 <script>
-//  import fakeData from './fakeData.js';
   import DataView from './DataView.vue';
   import axios from 'axios';
   
@@ -95,6 +93,9 @@
         return this.columns && this.columns.some(column => column.name === 'location_x' || column.name === 'location_y');
       }
       return true;
+    },
+    craftSheet(){
+      this.$emit('craftSheet');
     },
     saveSheet() {
         this.$emit('saveSheet', this.selectedRepresentation, this.selectedXColumn, this.selectedYColumn);
@@ -164,13 +165,6 @@
   height: 50px;
 }
 
-.tools-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 50px;
-}
-
 .title-container {
   text-align: center;
   flex-grow: 1;
@@ -188,12 +182,6 @@
   cursor: pointer;
 }
 .close-button {
-  background: none;
-  border: none;
-  font-size: 1.5em;
-  cursor: pointer;
-}
-.save-button {
   background: none;
   border: none;
   font-size: 1.5em;
@@ -218,6 +206,45 @@
 
 .representation-selectors button.selected {
   background-color: #aaa;
+}
+
+.axis-selectors {
+  position: relative;
+  display: flex;
+  width: 100%;
+  padding-top: 15px;
+  justify-content: center;
+  justify-content: center;
+  background-color: white;
+}
+
+.axis-selectors select {
+  margin: 0 10px;
+}
+
+
+.data-view-container {
+  flex-grow: 1;
+  flex-shrink: 1; /* allows it to shrink if needed */
+  overflow: auto; /* adds scrollbar if content overflows */
+}
+
+.tools-bar {
+  flex-shrink: 0; /* prevents it from shrinking */
+}
+
+.tools-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 50px;
+}
+
+.save-button {
+  background: none;
+  border: none;
+  font-size: 1.5em;
+  cursor: pointer;
 }
 
 /*
@@ -261,21 +288,6 @@
   justify-content: space-between;
   align-items: center;
   height: 50px;
-}
-
-
-.axis-selectors {
-  position: relative;
-  display: flex;
-  width: 100%;
-  padding-top: 15px;
-  justify-content: center;
-  justify-content: center;
-  background-color: white;
-}
-
-.axis-selectors select {
-  margin: 0 10px;
 }
 
 */

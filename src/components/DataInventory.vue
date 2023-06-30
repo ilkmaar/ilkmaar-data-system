@@ -39,7 +39,7 @@ export default {
   },
   data() {
     return {
-      activeSection: "Info",
+      activeSection: "",
     };
   },
   created() {
@@ -77,7 +77,7 @@ export default {
     toggleInventory() {
       this.$emit('toggle-inventory');
     }
-  },
+  }
 };
 </script>
 
